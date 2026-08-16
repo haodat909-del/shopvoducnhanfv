@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop Rút FV FCM Tự Động 24/7</title>
+    
+    <!-- Tải thư viện Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <style>
+        :root {
+            --bg-main: #06110d;
+            --bg-card: #0b1e17;
+            --border-green: #154232;
+            --green-bright: #00e676;
+            --green-btn: #10b981;
+            --green-btn-hover: #059669;
+            --gold-btn: #f59e0b;
+            --gold-hover: #d97706;
+            --text-gray: #9ca3af;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .top-bar {
+            background: #040a08;
+            padding: 8px 30px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: var(--text-gray);
+            border-bottom: 1px solid #11241c;
+        }
+
+        .main-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 40px;
+            background: #081711;
+            border-bottom: 1px solid var(--border-green);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .nav-btn {
+            background: transparent;
+            color: #fff;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-btn:hover { background: rgba(255, 255, 255, 0.05); }
+
+        .nav-btn.active {
+            background: #2563eb;
+            box-shadow: 0 0 10px rgba(37, 99, 235, 0.4);
+        }
+
+        .nav-btn.active-code {
+            background: #38bdf8;
+            color: #000;
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+        }
+
+        .nav-btn.admin-tab {
+            background: #8b5cf6;
+            color: #fff;
+        }
+
+        .user-gold-btn {
+            background: linear-gradient(185deg, #fce055 0%, var(--gold-btn) 100%);
+            color: #000;
+            font-weight: bold;
+            padding: 10px 22px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
+            font-size: 14px;
+        }
+
+        .user-gold-btn:hover {
+            background: var(--gold-hover);
+            color: #fff;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 90%;
+            margin: 40px auto;
+            background: var(--bg-card);
+            border: 1px solid var(--border-green);
+            border-radius: 12px;
+            padding: 35px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 28px;
+            color: var(--green-bright);
+            margin-bottom: 25px;
+            font-style: italic;
+            font-weight: 800;
+            text-shadow: 0 0 10px rgba(0, 230, 118, 0.3);
+        }
+
+        .item-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .item-card {
+            background: #091712;
+            border: 1px solid var(--border-green);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .item-card.active {
+            border-color: var(--green-bright);
+            box-shadow: 0 0 12px rgba(0, 230, 118, 0.3);
+            background: #0e291f;
+        }
+
+        .fv-icon-img {
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto 5px auto;
+        }
+
+        .item-name {
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .item-count {
+            font-size: 12px;
+            color: var(--text-gray);
+            margin-top: 3px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            color: #d1d5db;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 14px 16px;
+            background: #050d0a;
+            border: 1px solid var(--border-green);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .form-control:focus { border-color: var(--green-bright); }
+
+        .btn-submit {
+            width: 100%;
+            padding: 15px;
+            background: var(--green-btn);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: 0.2s;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-submit:hover { background: var(--green-btn-hover); }
+        .btn-submit:disabled { background: #4b5563; cursor: not-allowed; }
+
+        .info-box {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #112e23;
+        }
+
+        .info-box h4 {
+            color: var(--green-bright);
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .info-box ul {
+            list-style: disc;
+            padding-left: 20px;
+            color: var(--text-gray);
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border-green);
+            width: 400px;
+            padding: 25px;
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            color: var(--green-bright);
+            font-weight: bold;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-gray);
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .auth-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 8px;
+            background: #050d0a;
+            border: 1px solid var(--border-green);
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .auth-tab.active {
+            background: var(--green-btn);
+            border-color: var(--green-btn);
+        }
+
+        .success-pop-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .success-card {
+            background: #ffffff;
+            width: 420px;
+            border-radius: 8px;
+            padding: 35px 20px;
+            text-align: center;
+            color: #111;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.7); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .success-icon-circle {
+            width: 60px;
+            height: 60px;
+            background: #10b981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px auto;
+        }
+
+        .success-icon-circle svg {
+            width: 32px;
+            height: 32px;
+            fill: #fff;
+        }
+
+        .success-msg-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+
+        .success-msg-sub {
+            font-size: 15px;
+            color: #4b5563;
+            word-break: break-all;
+            margin-bottom: 20px;
+            white-space: pre-line;
+        }
+
+        .btn-pop-close {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 10px 30px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .code-list-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 13px;
+        }
+
+        .code-list-table th, .code-list-table td {
+            border: 1px solid var(--border-green);
+            padding: 10px;
+            text-align: center;
+        }
+
+        .code-list-table th { background: #050d0a; color: var(--green-bright); }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <div>
+            <span>⚡ Giao Dịch Tự Động 24/7</span>
+            <span style="margin-left: 15px;">🛡️ Bảo Mật Thông Tin FCM</span>
+        </div>
+    </div>
+
+    <header class="main-header">
+        <div style="font-weight: bold; font-size: 18px; color: var(--green-bright);">SHOPVODUCFCM</div>
+        <div class="nav-links">
+            <button class="nav-btn active" id="tab-rut" onclick="switchView('rut')">🔥 RÚT VẬT PHẨM</button>
+            <button class="nav-btn" id="tab-code" onclick="switchView('code')">🎁 NHẬP CODE</button>
+            <button class="nav-btn admin-tab hidden" id="tab-admin" onclick="switchView('admin')">⚙️ TẠO CODE (CHỦ SHOP)</button>
+        </div>
+        <button class="user-gold-btn" id="user-btn" onclick="openAuthModal()">🔑 ĐĂNG NHẬP</button>
+    </header>
+
+    <!-- SECTION 1: RÚT VẬT PHẨM -->
+    <div class="container" id="view-rut">
+        <h2 class="section-title">Rút Vật Phẩm Về ID Game</h2>
+        
+        <div class="item-grid">
+            <div class="item-card active" id="card-fv" onclick="selectCategory('fv')">
+                <img src="https://scontent.fdad1-3.fna.fbcdn.net/v/t39.30808-1/772664473_122134278591225263_1549359738859274888_n.jpg?stp=c0.0.162.162a_dst-jpg_tt6&cstp=mx162x162&ctp=s162x162&_nc_cat=106&_nc_map=urlgen_bucketless&ccb=1-7&_nc_sid=e99d92&_nc_ohc=-khD6te9rwwQ7kNvwF5VwZp&_nc_oc=AdoaxaO-K4XsQsV4SP3Sv3BQ5x9kFcO6OgD8wZn_FJSBpQ6nUjxznF-GOY2ul1gEeNNyE4G4uaig1puFxRmuoth0&_nc_zt=24&_nc_ht=scontent.fdad1-3.fna&_nc_gid=hGUic50xQ3acW_XGRPAvng&_nc_ss=7b2a8&oh=00_AQEW-e4X6eOc_C76QWv-k21kRkmBzIPSbaCEheTLmmbxpQ&oe=6A84859A" class="fv-icon-img" alt="FV Icon">
+                <div class="item-name">FV</div>
+                <div class="item-count" id="fv-balance-text">0</div>
+            </div>
+            <div class="item-card" id="card-badge" onclick="selectCategory('badge')">
+                <div style="font-size: 26px; margin-bottom: 5px;">🥇</div>
+                <div class="item-name">HUY HIỆU THẮNG HẠNG</div>
+                <div class="item-count" id="badge-balance-text">0</div>
+            </div>
+            <div class="item-card" id="card-ticket" onclick="selectCategory('ticket')">
+                <div style="font-size: 26px; margin-bottom: 5px;">🎟️</div>
+                <div class="item-name">VÉ QUAY FC</div>
+                <div class="item-count" id="ticket-balance-text">0</div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Nhập UID Tài Khoản (Đủ 19 chữ số FCM)</label>
+            <input type="text" id="uid-input" maxlength="19" class="form-control" placeholder="Ví dụ: 1234567890123456789">
+        </div>
+
+        <div class="form-group">
+            <label id="package-label">Gói Rút FV</label>
+            <select class="form-control" id="package-select">
+            </select>
+        </div>
+
+        <button class="btn-submit" onclick="handleRut()">XÁC NHẬN RÚT</button>
+
+        <div class="info-box">
+            <h4>QUAN TRỌNG!</h4>
+            <ul>
+                <li>ID FCM bắt buộc phải có đủ 19 chữ số.</li>
+                <li>Bạn cần có đủ vật phẩm khả dụng để rút gói tương ứng.</li>
+                <li>Sau khi gửi yêu cầu, shop sẽ xử lý và cộng vật phẩm về đúng ID game của bạn.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- SECTION 2: NHẬP CODE -->
+    <div class="container hidden" id="view-code">
+        <h2 class="section-title">Coupon Code</h2>
+
+        <div class="form-group" style="margin-top: 30px;">
+            <input type="text" id="giftcode-input" class="form-control" placeholder="Nhập code" style="text-align: center; font-size: 16px;">
+        </div>
+
+        <button class="btn-submit" id="btn-redeem" onclick="handleRedeemCode()">XÁC NHẬN</button>
+
+        <div class="info-box">
+            <h4>QUAN TRỌNG:</h4>
+            <ul>
+                <li>Nhập thành công sẽ cộng thẳng vật phẩm tương ứng vào số dư tài khoản của bạn.</li>
+                <li>Giftcode có từ 6-20 ký tự, bao gồm số và chữ.</li>
+                <li>Quà sẽ được cộng thẳng vào tài khoản của bạn ngay sau khi xác nhận thành công.</li>
+                <li>Mỗi Giftcode chỉ sử dụng được 1 lần cho mỗi tài khoản.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- SECTION 3: TẠO CODE (CHỦ SHOP) -->
+    <div class="container hidden" id="view-admin">
+        <h2 class="section-title" style="color: #f59e0b;">Quản Lý & Tạo Mã Code (Chủ Shop)</h2>
+
+        <div style="background: #050d0a; border: 1px solid var(--border-green); padding: 20px; border-radius: 8px;">
+            <div class="form-group">
+                <label>📌 Tên Code (Mã Code Tạo Mới)</label>
+                <input type="text" id="admin-new-code" class="form-control" placeholder="Nhập tên code (VD: ABCD)">
+            </div>
+            <div class="form-group">
+                <label>🔥 Số Lượng FV Bắt Buộc Trong Code</label>
+                <input type="number" id="admin-new-fv" class="form-control" placeholder="Nhập số FV (VD: 19999)">
+            </div>
+            <div class="form-group">
+                <label>🥇 Số Huy Hiệu Tặng Kèm (Để trống nếu không tặng)</label>
+                <input type="number" id="admin-new-badge" class="form-control" placeholder="0">
+            </div>
+            <div class="form-group">
+                <label>🎟️ Số Vé Quay Tặng Kèm (Để trống nếu không tặng)</label>
+                <input type="number" id="admin-new-ticket" class="form-control" placeholder="0">
+            </div>
+            <button class="btn-submit" id="btn-admin-create" style="background: #f59e0b; color: #000;" onclick="createCodeByAdmin()">➕ XÁC NHẬN TẠO MÃ CODE HỆ THỐNG</button>
+        </div>
+
+        <h3 style="margin-top: 25px; font-size: 15px; color: var(--green-bright);">Danh Sách Code Đang Có:</h3>
+        <table class="code-list-table">
+            <thead>
+                <tr>
+                    <th>Tên Code</th>
+                    <th>Số FV</th>
+                    <th>Số Huy Hiệu</th>
+                    <th>Số Vé Quay</th>
+                    <th>Thao Tác</th>
+                </tr>
+            </thead>
+            <tbody id="admin-code-tbody">
+            </tbody>
+        </table>
+    </div>
+
+    <!-- MODAL ĐĂNG NHẬP -->
+    <div class="modal-overlay" id="auth-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title">Tài Khoản Hệ Thống</span>
+                <button class="close-btn" onclick="closeAuthModal()">&times;</button>
+            </div>
+
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="tab-login-btn" onclick="setAuthMode('login')">Đăng Nhập</button>
+                <button class="auth-tab" id="tab-register-btn" onclick="setAuthMode('register')">Đăng Ký</button>
+            </div>
+
+            <form id="form-login" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>Tên Tài Khoản</label>
+                    <input type="text" id="login-user" class="form-control" required placeholder="Nhập tên tài khoản" oninput="checkUserSecurityField()">
+                </div>
+                <div class="form-group">
+                    <label>Mật Khẩu</label>
+                    <input type="password" id="login-pass" class="form-control" required placeholder="Nhập mật khẩu">
+                </div>
+
+                <div class="form-group hidden" id="sec-code-group">
+                    <label style="color: #f59e0b;">Mã Bảo Mật 4 Số (Chủ Shop)</label>
+                    <input type="text" id="login-code" class="form-control" maxlength="4" placeholder="Nhập 4 số bảo mật">
+                </div>
+
+                <button type="submit" class="btn-submit">ĐĂNG NHẬP NGAY</button>
+            </form>
+
+            <form id="form-register" class="hidden" onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label>Tài Khoản Mới</label>
+                    <input type="text" id="reg-user" class="form-control" required placeholder="Tạo tên tài khoản">
+                </div>
+                <div class="form-group">
+                    <label>Mật Khẩu</label>
+                    <input type="password" id="reg-pass" class="form-control" required placeholder="Tạo mật khẩu">
+                </div>
+                <button type="submit" class="btn-submit" style="background: var(--gold-btn); color: #000;">ĐĂNG KÝ TÀI KHOẢN</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- POPUP THÔNG BÁO -->
+    <div class="success-pop-overlay" id="success-pop">
+        <div class="success-card">
+            <div class="success-icon-circle">
+                <svg viewBox="0 0 24 24">
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                </svg>
+            </div>
+            <div class="success-msg-title" id="pop-title">Thông báo</div>
+            <div class="success-msg-sub" id="pop-desc">bạn đã nhập coode này rồi</div>
+            <button class="btn-pop-close" onclick="closeSuccessPop()">XÁC NHẬN</button>
+        </div>
+    </div>
+
+    <script>
+        // CẤU HÌNH FIREBASE DATABASE CHUẨN ĐÃ ĐƯỢC CẬP NHẬT DỮ LIỆU TỪ DỰ ÁN CỦA BẠN
+        const firebaseConfig = {
+            apiKey: "AIzaSyC-dOaXN_t3mpX3_3sLpYrQDoYXOa_P9c0",
+            authDomain: "nhanfv-c66c9.firebaseapp.com",
+            databaseURL: "https://nhanfv-c66c9-default-rtdb.firebaseio.com",
+            projectId: "nhanfv-c66c9",
+            storageBucket: "nhanfv-c66c9.firebasestorage.app",
+            messagingSenderId: "458422692316",
+            appId: "1:458422692316:web:52be1aab30c5735d4b4719",
+            measurementId: "G-0FGZ9FHLEH"
+        };
+        
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.database();
+
+        let currentUser = localStorage.getItem('currentUser') || null;
+        let isOwner = localStorage.getItem('isOwner') === 'true';
+
+        let userFvBalance = 0;
+        let userBadgeBalance = 0;
+        let userTicketBalance = 0;
+        let usedCodes = [];
+        let currentCategory = 'fv';
+
+        function loadCurrentUserData() {
+            if (!currentUser) {
+                userFvBalance = 0;
+                userBadgeBalance = 0;
+                userTicketBalance = 0;
+                usedCodes = [];
+            } else {
+                let uData = JSON.parse(localStorage.getItem('user_data_' + currentUser.toLowerCase())) || {};
+                userFvBalance = Number(uData.fv) || 0;
+                userBadgeBalance = Number(uData.badge) || 0;
+                userTicketBalance = Number(uData.ticket) || 0;
+                usedCodes = Array.isArray(uData.usedCodes) ? uData.usedCodes : [];
+            }
+            updateUIBalance();
+        }
+
+        function saveCurrentUserData() {
+            if (currentUser) {
+                let uData = {
+                    fv: userFvBalance,
+                    badge: userBadgeBalance,
+                    ticket: userTicketBalance,
+                    usedCodes: usedCodes
+                };
+                localStorage.setItem('user_data_' + currentUser.toLowerCase(), JSON.stringify(uData));
+            }
+        }
+
+        window.onload = function() {
+            if (currentUser) {
+                if (isOwner) {
+                    document.getElementById('user-btn').innerText = "👑 " + currentUser;
+                    document.getElementById('tab-admin').classList.remove('hidden');
+                } else {
+                    document.getElementById('user-btn').innerText = "👤 " + currentUser;
+                }
+            }
+            loadCurrentUserData();
+            selectCategory('fv');
+        };
+
+        function updateUIBalance() {
+            document.getElementById('fv-balance-text').innerText = userFvBalance.toLocaleString('vi-VN');
+            document.getElementById('badge-balance-text').innerText = userBadgeBalance.toLocaleString('vi-VN');
+            document.getElementById('ticket-balance-text').innerText = userTicketBalance.toLocaleString('vi-VN');
+        }
+
+        function selectCategory(type) {
+            currentCategory = type;
+            document.getElementById('card-fv').classList.remove('active');
+            document.getElementById('card-badge').classList.remove('active');
+            document.getElementById('card-ticket').classList.remove('active');
+
+            const pkgSelect = document.getElementById('package-select');
+            const pkgLabel = document.getElementById('package-label');
+            pkgSelect.innerHTML = "";
+
+            if (type === 'fv') {
+                document.getElementById('card-fv').classList.add('active');
+                pkgLabel.innerText = "Gói Rút FV";
+                pkgSelect.innerHTML = `
+                    <option value="19999">Gói rút 19,999 FV</option>
+                    <option value="29999">Gói rút 29,999 FV</option>
+                    <option value="39999">Gói rút 39,999 FV</option>
+                    <option value="49999">Gói rút 49,999 FV</option>
+                    <option value="59999">Gói rút 59,999 FV</option>
+                    <option value="99999">Gói rút 99,999 FV VIP</option>
+                `;
+            } else if (type === 'badge') {
+                document.getElementById('card-badge').classList.add('active');
+                pkgLabel.innerText = "Gói Rút Huy Hiệu Thắng Hạng";
+                pkgSelect.innerHTML = `
+                    <option value="10">Gói rút 10 Huy Hiệu</option>
+                    <option value="20">Gói rút 20 Huy Hiệu</option>
+                    <option value="50">Gói rút 50 Huy Hiệu</option>
+                    <option value="100">Gói rút 100 Huy Hiệu VIP</option>
+                `;
+            } else if (type === 'ticket') {
+                document.getElementById('card-ticket').classList.add('active');
+                pkgLabel.innerText = "Gói Rút Vé Quay FC";
+                pkgSelect.innerHTML = `
+                    <option value="5">Gói rút 5 Vé Quay FC</option>
+                    <option value="10">Gói rút 10 Vé Quay FC</option>
+                    <option value="20">Gói rút 20 Vé Quay FC</option>
+                    <option value="50">Gói rút 50 Vé Quay FC</option>
+                    <option value="100">Gói rút 100 Vé Quay FC VIP</option>
+                `;
+            }
+        }
+
+        function switchView(view) {
+            document.getElementById('view-rut').classList.add('hidden');
+            document.getElementById('view-code').classList.add('hidden');
+            document.getElementById('view-admin').classList.add('hidden');
+
+            document.getElementById('tab-rut').className = "nav-btn";
+            document.getElementById('tab-code').className = "nav-btn";
+            document.getElementById('tab-admin').className = "nav-btn admin-tab hidden";
+
+            if (isOwner) {
+                document.getElementById('tab-admin').classList.remove('hidden');
+            }
+
+            if (view === 'rut') {
+                document.getElementById('view-rut').classList.remove('hidden');
+                document.getElementById('tab-rut').className = "nav-btn active";
+            } else if (view === 'code') {
+                document.getElementById('view-code').classList.remove('hidden');
+                document.getElementById('tab-code').className = "nav-btn active-code";
+            } else if (view === 'admin') {
+                if (!isOwner) {
+                    alert("⚠️ Bạn không có quyền truy cập trang này!");
+                    switchView('rut');
+                    return;
+                }
+                document.getElementById('view-admin').classList.remove('hidden');
+                document.getElementById('tab-admin').className = "nav-btn admin-tab active";
+                renderAdminCodeTable();
+            }
+        }
+
+        function checkUserSecurityField() {
+            const userInput = document.getElementById('login-user').value.trim();
+            const secGroup = document.getElementById('sec-code-group');
+            if (userInput === "voducfcm") {
+                secGroup.classList.remove('hidden');
+            } else {
+                secGroup.classList.add('hidden');
+            }
+        }
+
+        function openAuthModal() {
+            if (currentUser) {
+                if (confirm(`Bạn đang đăng nhập dưới tên: ${currentUser}\nBạn có muốn đăng xuất không?`)) {
+                    saveCurrentUserData();
+                    currentUser = null;
+                    isOwner = false;
+                    localStorage.removeItem('currentUser');
+                    localStorage.removeItem('isOwner');
+                    
+                    document.getElementById('user-btn').innerText = "🔑 ĐĂNG NHẬP";
+                    document.getElementById('tab-admin').classList.add('hidden');
+                    loadCurrentUserData();
+                    switchView('rut');
+                }
+                return;
+            }
+            document.getElementById('auth-modal').style.display = 'flex';
+        }
+
+        function closeAuthModal() {
+            document.getElementById('auth-modal').style.display = 'none';
+        }
+
+        function setAuthMode(mode) {
+            if (mode === 'login') {
+                document.getElementById('form-login').classList.remove('hidden');
+                document.getElementById('form-register').classList.add('hidden');
+                document.getElementById('tab-login-btn').classList.add('active');
+                document.getElementById('tab-register-btn').classList.remove('active');
+            } else {
+                document.getElementById('form-login').classList.add('hidden');
+                document.getElementById('form-register').classList.remove('hidden');
+                document.getElementById('tab-login-btn').classList.remove('active');
+                document.getElementById('tab-register-btn').classList.add('active');
+            }
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+            const u = document.getElementById('login-user').value.trim();
+            const p = document.getElementById('login-pass').value.trim();
+            const code = document.getElementById('login-code').value.trim();
+
+            if (u === "voducfcm") {
+                if (p === "chushopdz" && code === "2014") {
+                    currentUser = u;
+                    isOwner = true;
+                    localStorage.setItem('currentUser', currentUser);
+                    localStorage.setItem('isOwner', 'true');
+                    loadCurrentUserData();
+                    alert("👑 Đã đăng nhập tài khoản CHỦ SHOP thành công!");
+                    document.getElementById('user-btn').innerText = "👑 " + u;
+                    document.getElementById('tab-admin').classList.remove('hidden');
+                    closeAuthModal();
+                } else {
+                    alert("❌ Sai Mật khẩu hoặc Mã Bảo Mật 4 số của Chủ Shop!");
+                }
+            } else {
+                if (p.length >= 4) {
+                    currentUser = u;
+                    isOwner = false;
+                    localStorage.setItem('currentUser', currentUser);
+                    localStorage.setItem('isOwner', 'false');
+                    loadCurrentUserData();
+                    alert("✅ Đăng nhập tài khoản thành công!");
+                    document.getElementById('user-btn').innerText = "👤 " + u;
+                    document.getElementById('tab-admin').classList.add('hidden');
+                    closeAuthModal();
+                } else {
+                    alert("❌ Mật khẩu phải từ 4 ký tự trở lên!");
+                }
+            }
+        }
+
+        function handleRegister(event) {
+            event.preventDefault();
+            const u = document.getElementById('reg-user').value.trim();
+            alert(`✅ Tạo thành công tài khoản: ${u}. Hãy đăng nhập!`);
+            setAuthMode('login');
+        }
+
+        function handleRut() {
+            if (!currentUser) {
+                alert("⚠️ Vui lòng đăng nhập tài khoản trước!");
+                openAuthModal();
+                return;
+            }
+
+            const uid = document.getElementById('uid-input').value.trim();
+            if (uid.length !== 19 || isNaN(uid)) {
+                alert("⚠️ ID FCM không hợp lệ! Vui lòng nhập đúng ĐỦ 19 CHỮ SỐ.");
+                return;
+            }
+
+            const selectedPkg = Number(document.getElementById('package-select').value);
+
+            if (currentCategory === 'fv') {
+                if (userFvBalance < selectedPkg) {
+                    alert(`⚠️ Bạn không đủ FV! Hiện có: ${userFvBalance.toLocaleString('vi-VN')} FV (Cần ${selectedPkg.toLocaleString('vi-VN')} FV).`);
+                    return;
+                }
+                userFvBalance -= selectedPkg;
+                showSuccessPop("Thanh toán thành công", `Thanh Toán FV Thành Công cho id ${uid}\n(Gói ${selectedPkg.toLocaleString('vi-VN')} FV)`);
+
+            } else if (currentCategory === 'badge') {
+                if (userBadgeBalance < selectedPkg) {
+                    alert(`⚠️ Bạn không đủ Huy Hiệu! Hiện có: ${userBadgeBalance} Huy Hiệu (Cần ${selectedPkg} Huy Hiệu).`);
+                    return;
+                }
+                userBadgeBalance -= selectedPkg;
+                showSuccessPop("Thanh toán thành công", `Thanh Toán Huy Hiệu Thành Công cho id ${uid}\n(Gói ${selectedPkg} Huy Hiệu)`);
+
+            } else if (currentCategory === 'ticket') {
+                if (userTicketBalance < selectedPkg) {
+                    alert(`⚠️ Bạn không đủ Vé Quay FC! Hiện có: ${userTicketBalance} Vé (Cần ${selectedPkg} Vé).`);
+                    return;
+                }
+                userTicketBalance -= selectedPkg;
+                showSuccessPop("Thanh toán thành công", `Thanh Toán Vé Quay FC Thành Công cho id ${uid}\n(Gói ${selectedPkg} Vé Quay)`);
+            }
+
+            updateUIBalance();
+            saveCurrentUserData();
+        }
+
+        function createCodeByAdmin() {
+            const codeVal = document.getElementById('admin-new-code').value.trim().toUpperCase();
+            const fvVal = Number(document.getElementById('admin-new-fv').value) || 0;
+            const badgeVal = Number(document.getElementById('admin-new-badge').value) || 0;
+            const ticketVal = Number(document.getElementById('admin-new-ticket').value) || 0;
+
+            if (!codeVal) { alert("⚠️ Vui lòng nhập Tên Code!"); return; }
+            if (fvVal <= 0) { alert("⚠️ Số FV tạo phải lớn hơn 0!"); return; }
+
+            db.ref('codes/' + codeVal).set({
+                code: codeVal,
+                fv: fvVal,
+                badge: badgeVal,
+                ticket: ticketVal
+            }).then(() => {
+                let msg = `✅ Tạo Code thành công lên hệ thống:\n📌 Tên Code: ${codeVal}\n💎 FV: +${fvVal.toLocaleString('vi-VN')}`;
+                if (badgeVal > 0) msg += `\n🥇 Huy Hiệu: +${badgeVal}`;
+                if (ticketVal > 0) msg += `\n🎟️ Vé Quay: +${ticketVal}`;
+
+                alert(msg);
+                
+                document.getElementById('admin-new-code').value = "";
+                document.getElementById('admin-new-fv').value = "";
+                document.getElementById('admin-new-badge').value = "";
+                document.getElementById('admin-new-ticket').value = "";
+                
+                renderAdminCodeTable();
+            }).catch((err) => {
+                alert("❌ Lỗi tạo code: " + err.message);
+            });
+        }
+
+        function deleteCode(codeName) {
+            if(confirm(`Bạn có chắc muốn xoá code ${codeName} khỏi hệ thống không?`)) {
+                db.ref('codes/' + codeName).remove().then(() => {
+                    renderAdminCodeTable();
+                });
+            }
+        }
+
+        function renderAdminCodeTable() {
+            const tbody = document.getElementById('admin-code-tbody');
+            
+            db.ref('codes').once('value').then((snapshot) => {
+                tbody.innerHTML = "";
+                if(!snapshot.exists()) {
+                    tbody.innerHTML = "<tr><td colspan='5'>Chưa có code nào trên hệ thống.</td></tr>";
+                    return;
+                }
+
+                snapshot.forEach((child) => {
+                    let item = child.val();
+                    tbody.innerHTML += `
+                        <tr>
+                            <td style="color: #f59e0b; font-weight: bold;">${item.code}</td>
+                            <td style="color: var(--green-bright); font-weight: bold;">+${Number(item.fv).toLocaleString('vi-VN')} FV</td>
+                            <td style="color: #fce055; font-weight: bold;">${item.badge > 0 ? '+' + item.badge + ' HH' : '-'}</td>
+                            <td style="color: #38bdf8; font-weight: bold;">${item.ticket > 0 ? '+' + item.ticket + ' Vé' : '-'}</td>
+                            <td><button onclick="deleteCode('${item.code}')" style="background:#ef4444; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">Xoá</button></td>
+                        </tr>
+                    `;
+                });
+            });
+        }
+
+        function handleRedeemCode() {
+            if (!currentUser) {
+                alert("⚠️ Vui lòng đăng nhập trước khi nhập Code!");
+                openAuthModal();
+                return;
+            }
+
+            const inputCode = document.getElementById('giftcode-input').value.trim().toUpperCase();
+
+            if (!inputCode) {
+                alert("⚠️ Vui lòng nhập mã code!");
+                return;
+            }
+
+            if (usedCodes.includes(inputCode)) {
+                showSuccessPop("Thông báo", "bạn đã nhập coode này rồi");
+                return;
+            }
+
+            const btn = document.getElementById('btn-redeem');
+            btn.disabled = true;
+            btn.innerText = "ĐANG XỬ LÝ...";
+
+            let isResponded = false;
+
+            const timer = setTimeout(() => {
+                if (!isResponded) {
+                    isResponded = true;
+                    btn.disabled = false;
+                    btn.innerText = "XÁC NHẬN";
+                    alert("❌ Lỗi: Không thể kết nối tới Firebase Database. Vui lòng kiểm tra lại Rules Firebase!");
+                }
+            }, 3000);
+
+            db.ref('codes/' + inputCode).once('value').then((snapshot) => {
+                if (isResponded) return;
+                isResponded = true;
+                clearTimeout(timer);
+
+                btn.disabled = false;
+                btn.innerText = "XÁC NHẬN";
+
+                if (snapshot.exists()) {
+                    const item = snapshot.val();
+
+                    userFvBalance += Number(item.fv || 0);
+                    userBadgeBalance += Number(item.badge || 0);
+                    userTicketBalance += Number(item.ticket || 0);
+                    
+                    usedCodes.push(inputCode);
+                    
+                    updateUIBalance();
+                    saveCurrentUserData();
+
+                    let rewardText = `Chúc mừng bạn đã nhận thành công:\n+${Number(item.fv || 0).toLocaleString('vi-VN')} FV`;
+                    if (item.badge > 0) rewardText += `\n+${item.badge} Huy Hiệu Thắng Hạng`;
+                    if (item.ticket > 0) rewardText += `\n+${item.ticket} Vé Quay FC`;
+
+                    showSuccessPop("Nhập Code Thành Công!", rewardText);
+                    document.getElementById('giftcode-input').value = "";
+                } else {
+                    alert("❌ Mã Code không tồn tại hoặc đã bị xóa!");
+                }
+            }).catch((err) => {
+                if (isResponded) return;
+                isResponded = true;
+                clearTimeout(timer);
+                btn.disabled = false;
+                btn.innerText = "XÁC NHẬN";
+                alert("❌ Lỗi Firebase: " + err.message);
+            });
+        }
+
+        function showSuccessPop(title, desc) {
+            document.getElementById('pop-title').innerText = title;
+            document.getElementById('pop-desc').innerText = desc;
+            document.getElementById('success-pop').style.display = 'flex';
+        }
+
+        function closeSuccessPop() {
+            document.getElementById('success-pop').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
